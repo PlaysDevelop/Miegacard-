@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MiegaCard - Login</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: white;
+        }
+
+        .container {
+            text-align: center;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            width: 300px;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .switch {
+            margin-top: 10px;
+            color: blue;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="loginContainer">
+        <h2>Entrar</h2>
+        <input type="text" id="loginUser" placeholder="Nome ou E-mail">
+        <input type="password" id="loginPassword" placeholder="Senha">
+        <button onclick="login()">Entrar</button>
+        <p class="switch" onclick="showRegister()">Não tem conta? Registre-se</p>
+    </div>
+
+    <div class="container" id="registerContainer" style="display: none;">
+        <h2>Registrar</h2>
+        <input type="text" id="registerName" placeholder="Nome">
+        <input type="date" id="registerDob" placeholder="Data de Nascimento">
+        <input type="email" id="registerEmail" placeholder="E-mail">
+        <input type="password" id="registerPassword" placeholder="Senha">
+        <button onclick="register()">Registrar</button>
+        <p class="switch" onclick="showLogin()">Já tem uma conta? Faça login</p>
+    </div>
+
+    <script>
+        function showRegister() {
+            document.getElementById("loginContainer").style.display = "none";
+            document.getElementById("registerContainer").style.display = "block";
+        }
+
+        function showLogin() {
+            document.getElementById("registerContainer").style.display = "none";
+            document.getElementById("loginContainer").style.display = "block";
+        }
+
+        function register() {
+            let name = document.getElementById("registerName").value;
+            let dob = document.getElementById("registerDob").value;
+            let email = document.getElementById("registerEmail").value;
+            let password = document.getElementById("registerPassword").value;
+
+            if (!name || !dob || !email || !password) {
+                alert("Preencha todos os campos!");
+                return;
+            }
+
+            let user = { name, dob, email, password, cards: [] };
+            localStorage.setItem("user", JSON.stringify(user));
+
+            alert("Registro concluído! Faça login.");
+            showLogin();
+        }
+
+        function login() {
+            let loginUser = document.getElementById("loginUser").value;
+            let loginPassword = document.getElementById("loginPassword").value;
+            let storedUser = JSON.parse(localStorage.getItem("user"));
+
+            if (!storedUser || (storedUser.email !== loginUser && storedUser.name !== loginUser) || storedUser.password !== loginPassword) {
+                alert("Usuário ou senha incorretos!");
+                return;
+            }
+
+            localStorage.setItem("loggedIn", "true");
+            window.location.href = "menu.html";
+        }
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MiegaCard - Perfil</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: white;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Perfil do Usuário</h1>
+    <p><strong>Nome:</strong> <span id="userName"></span> <button onclick="editName()">✏</button></p>
+    <p><strong>E-mail:</strong> <span id="userEmail"></span></p>
+    <button onclick="buyVip()">Comprar VIP ⭐</button>
+    <button onclick="logout()">Sair</button>
+
+    <script>
+        function loadProfile() {
+            let user = JSON.parse(localStorage.getItem("user"));
+            document.getElementById("userName").textContent = user.name;
+            document.getElementById("userEmail").textContent = user.email;
+        }
+
+        function editName() {
+            let newName = prompt("Digite o novo nome:");
+            if (newName) {
+                let user = JSON.parse(localStorage.getItem("user"));
+                user.name = newName;
+                localStorage.setItem("user", JSON.stringify(user));
+                loadProfile();
+            }
+        }
+
+        function buyVip() {
+            alert("Função VIP em breve!");
+        }
+
+        function logout() {
+            localStorage.removeItem("loggedIn");
+            window.location.href = "index.html";
+        }
+
+        document.addEventListener("DOMContentLoaded", loadProfile);
+    </script>
+
+</body>
+</html>

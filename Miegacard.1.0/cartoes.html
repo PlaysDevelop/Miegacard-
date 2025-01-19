@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meus Cartões</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        /* Ícones fixos no canto superior direito */
+        .icons-container {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .home-icon, .card-icon {
+            font-size: 2rem;
+            cursor: pointer;
+            background-color: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Botão "+" no canto superior esquerdo */
+        .add-card {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 2rem;
+            cursor: pointer;
+            color: #4CAF50;
+        }
+
+        /* Campo de entrada do número do cartão */
+        .card-input {
+            display: none;
+            margin-top: 20px;
+            font-size: 1.5rem;
+            padding: 10px;
+            border: 2px solid #333;
+            border-radius: 5px;
+            text-align: center;
+            width: 300px;
+            letter-spacing: 2px;
+        }
+
+        /* Botão de OK */
+        .ok-button {
+            display: none;
+            margin-top: 10px;
+            font-size: 1.5rem;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .ok-button:hover {
+            background-color: #45a049;
+        }
+
+        /* Área onde os cartões aparecem */
+        .cards-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        /* Cartão estilizado */
+        .card-item {
+            width: 320px;
+            height: 200px;
+            background-color: #ddd;
+            border-radius: 15px;
+            font-size: 1.2rem;
+            position: relative;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Posicionamento da logo do cartão no canto inferior esquerdo */
+        .card-logo {
+            width: 60px;
+            height: 40px;
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+        }
+
+        /* Estilização do número do cartão */
+        .card-number {
+            font-size: 1.5rem;
+            letter-spacing: 3px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        /* Botão de lixeira para remover o cartão */
+        .delete-card {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: red;
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Ícones fixos no canto superior direito -->
+    <div class="icons-container">
+        <div class="home-icon" onclick="goHome()">🏠</div>
+        <div class="card-icon" onclick="goToCards()">💳</div>
+    </div>
+
+    <!-- Botão "+" para adicionar cartão -->
+    <div class="add-card" onclick="showInput()">➕</div>
+
+    <!-- Campo de entrada do número do cartão -->
+    <input type="text" id="cardNumber" class="card-input" placeholder="Digite o número do cartão" maxlength="19" oninput="formatCardNumber()">
+
+    <!-- Botão de OK -->
+    <button class="ok-button" id="okButton" onclick="addCard()">✔</button>
+
+    <!-- Área onde os cartões serão exibidos -->
+    <div class="cards-container" id="cardsContainer"></div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", loadCards);
+
+        function showInput() {
+            let cards = JSON.parse(localStorage.getItem("cards")) || [];
+            if (cards.length >= 6) {
+                alert("Você só pode adicionar até 6 cartões.");
+                return;
+            }
+            document.getElementById("cardNumber").style.display = "block";
+        }
+
+        function formatCardNumber() {
+            let cardInput = document.getElementById("cardNumber");
+            let value = cardInput.value.replace(/\D/g, "");
+
+            if (value.length > 16) {
+                value = value.substring(0, 16);
+            }
+
+            value = value.replace(/(\d{4})/g, "$1 ").trim();
+            cardInput.value = value;
+
+            document.getElementById("okButton").style.display = value.replace(/\s/g, "").length === 16 ? "block" : "none";
+        }
+
+        function addCard() {
+            let cardInput = document.getElementById("cardNumber").value.replace(/\s/g, "");
+            if (cardInput.length !== 16) return;
+
+            let maskedNumber = "**** **** **** " + cardInput.slice(-4);
+            let brand = getCardBrand(cardInput);
+
+            if (!brand) {
+                alert("Bandeira do cartão não reconhecida.");
+                return;
+            }
+
+            let cards = JSON.parse(localStorage.getItem("cards")) || [];
+            if (cards.length >= 6) {
+                alert("Você atingiu o limite máximo de 6 cartões.");
+                return;
+            }
+
+            cards.push({ number: maskedNumber, brand: brand });
+            localStorage.setItem("cards", JSON.stringify(cards));
+
+            renderCards();
+
+            document.getElementById("cardNumber").style.display = "none";
+            document.getElementById("okButton").style.display = "none";
+            document.getElementById("cardNumber").value = "";
+        }
+
+        function renderCards() {
+            let cardsContainer = document.getElementById("cardsContainer");
+            cardsContainer.innerHTML = "";
+            let cards = JSON.parse(localStorage.getItem("cards")) || [];
+
+            cards.forEach((card, index) => {
+                let cardItem = document.createElement("div");
+                cardItem.className = "card-item";
+                cardItem.innerHTML = `
+                    <img src="${card.brand}" class="card-logo" alt="Bandeira do cartão">
+                    <span class="card-number">${card.number}</span>
+                    <button class="delete-card" onclick="removeCard(${index})">🗑️</button>
+                `;
+                cardsContainer.appendChild(cardItem);
+            });
+        }
+
+        function removeCard(index) {
+            let cards = JSON.parse(localStorage.getItem("cards")) || [];
+            cards.splice(index, 1);
+            localStorage.setItem("cards", JSON.stringify(cards));
+            renderCards();
+        }
+
+        function loadCards() {
+            renderCards();
+        }
+
+        function getCardBrand(number) {
+            let firstDigit = number[0];
+
+            if (firstDigit == "3") return "american-express.png";
+            if (firstDigit == "4") return "visa.png";
+            if (firstDigit == "5" || firstDigit == "2") return "mastercard.png";
+            if (firstDigit == "6") return "elo.png";
+
+            return null;
+        }
+
+        function goHome() {
+            window.location.href = "index.html";
+        }
+
+        function goToCards() {
+            window.location.href = "cartoes.html";
+        }
+    </script>
+
+</body>
+</html>
